@@ -5,70 +5,198 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Merveilleux Noël 2025 🎄✨ Créé par [GHISLAIN MKGH]</title>
     <style>
+        * { box-sizing: border-box; }
+        
         body { 
             margin: 0; 
+            padding: 0;
             overflow: hidden; 
             background: linear-gradient(to bottom, #001122, #000011); 
             font-family: 'Arial', sans-serif; 
             color: white; 
             cursor: none;
+            width: 100vw;
+            height: 100vh;
         }
-        canvas { display: block; }
+        
+        html { width: 100%; height: 100%; }
+        
+        canvas { display: block; width: 100%; height: 100%; }
+        
         #form { 
-            position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 100; background: rgba(0,0,0,0.6); 
-            padding: 12px 18px; border-radius: 12px; backdrop-filter: blur(8px); width: min(95%, 900px);
+            position: absolute; 
+            top: clamp(8px, 5vh, 80px); 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 100; 
+            background: rgba(0,0,0,0.6); 
+            padding: clamp(12px, 3vw, 20px); 
+            border-radius: 12px; 
+            backdrop-filter: blur(8px); 
+            width: min(95vw, 900px);
+            max-height: 70vh;
+            overflow-y: auto;
         }
-        #pageTitle { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 130; font-size: 1.4rem; text-align: center; -webkit-background-clip: text; color: white; }
+        
+        #pageTitle { 
+            position: fixed; 
+            top: 8px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            z-index: 130; 
+            font-size: clamp(1rem, 4vw, 1.4rem); 
+            text-align: center; 
+            -webkit-background-clip: text; 
+            color: white;
+            padding: 0 10px;
+        }
+        
         input { 
-            background: rgba(255,255,255,0.1); border: 2px solid #ff6b6b; color: white; 
-            padding: 10px; border-radius: 10px; margin: 5px; width: min(80vw, 260px);
+            background: rgba(255,255,255,0.1); 
+            border: 2px solid #ff6b6b; 
+            color: white; 
+            padding: clamp(8px, 2vw, 10px); 
+            border-radius: 10px; 
+            margin: 5px auto; 
+            width: min(90vw, 300px);
+            font-size: clamp(12px, 2vw, 16px);
+            display: block;
         }
+        
         button { 
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4); border: none; color: white; 
-            padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; margin: 5px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4); 
+            border: none; 
+            color: white; 
+            padding: clamp(8px, 2vw, 10px) clamp(12px, 3vw, 20px); 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            margin: 5px;
+            font-size: clamp(12px, 2vw, 16px);
+            white-space: nowrap;
         }
-        /* Controls bar: grouped and centered to avoid confusion */
-        .controls { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
+        
+        .controls { 
+            display: flex; 
+            gap: clamp(4px, 2vw, 8px); 
+            justify-content: center; 
+            align-items: center; 
+            flex-wrap: wrap;
+            margin: clamp(8px, 2vw, 15px) 0;
+        }
+        
         .controls button { position: relative; z-index: 110; }
-        #namesList { margin-top: 10px; max-height: 200px; overflow-y: auto; }
-        .nameItem { 
-            background: rgba(255,255,255,0.1); margin: 5px 0; padding: 5px; border-radius: 5px; 
-            animation: glow 2s infinite alternate;
+        
+        #namesList { 
+            margin-top: 10px; 
+            max-height: 200px; 
+            overflow-y: auto;
         }
-        @keyframes glow { 0% { box-shadow: 0 0 5px #ff6b6b; } 100% { box-shadow: 0 0 20px #4ecdc4; } }
-        h1 { text-align: center; font-size: 2em; margin: 20px 0; background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: rainbow 3s infinite; }
-        @keyframes rainbow { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        
+        .nameItem { 
+            background: rgba(255,255,255,0.1); 
+            margin: 5px 0; 
+            padding: 8px; 
+            border-radius: 5px; 
+            animation: glow 2s infinite alternate;
+            font-size: clamp(12px, 2vw, 16px);
+        }
+        
+        @keyframes glow { 
+            0% { box-shadow: 0 0 5px #ff6b6b; } 
+            100% { box-shadow: 0 0 20px #4ecdc4; } 
+        }
+        
+        h1 { 
+            text-align: center; 
+            font-size: clamp(1.2em, 5vw, 2.5em); 
+            margin: 20px 0; 
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            animation: rainbow 3s infinite; 
+        }
+        
+        @keyframes rainbow { 
+            0%,100%{background-position:0% 50%} 
+            50%{background-position:100% 50%} 
+        }
+        
         #photoCanvas { 
             position: absolute; 
-            z-index: 9999; /* photo above all UI */
+            z-index: 9999;
             border-radius: 50%; 
             box-shadow: 0 0 60px rgba(255,215,0,0.9); 
             left: 50%; 
             top: 45%; 
             transform: translate(-50%, -50%);
-            width: 30vmin;
-            height: 30vmin;
+            width: min(35vmin, 90vw);
+            height: min(35vmin, 90vw);
             max-width: 420px;
             max-height: 420px;
         }
+        
         #creatorLabel { 
-            position: absolute; z-index: 60; left: 50%; top: 75%; transform: translate(-50%, -50%);
-            background: linear-gradient(45deg, #ffd700, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            font-size: 24px; font-weight: bold; animation: rainbow 3s infinite; text-shadow: 0 0 20px rgba(255,215,0,0.8);
+            position: absolute; 
+            z-index: 60; 
+            left: 50%; 
+            top: 75%; 
+            transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ffd700, #ff6b6b); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            font-size: clamp(16px, 3vw, 28px); 
+            font-weight: bold; 
+            animation: rainbow 3s infinite; 
+            text-shadow: 0 0 20px rgba(255,215,0,0.8);
+            padding: 0 10px;
+            text-align: center;
+            max-width: 90vw;
         }
 
-        @media (max-width: 480px) {
-            #form { left: 8px; top: 8px; padding: 12px; width: calc(100% - 16px); }
-            h1 { font-size: 1.2em; }
-            button { padding: 8px 12px; font-size: 14px; }
-            #photoCanvas { width: 40vmin; height: 40vmin; }
+        /* Tablettes et écrans moyens (481px - 768px) */
+        @media (min-width: 481px) and (max-width: 768px) {
+            #form { top: clamp(8px, 8vh, 100px); }
+            button { padding: 10px 16px; }
         }
 
-        .hat { position: absolute; font-size: 28px; z-index: 120; pointer-events: none; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        .hat-top-left { left: 6px; top: 6px; }
-        .hat-top-right { right: 6px; top: 6px; }
-        .hat-bottom-left { left: 6px; bottom: 6px; }
-        .hat-bottom-right { right: 6px; bottom: 6px; }
+        /* Grands écrans (769px et plus) */
+        @media (min-width: 769px) {
+            #form { top: clamp(60px, 10vh, 120px); }
+            button { padding: 12px 24px; }
+        }
+
+        /* Très petits écrans (320px - 380px) */
+        @media (max-width: 380px) {
+            #form { top: 8px; padding: 10px; }
+            .controls button { min-width: auto; flex: 1; }
+            input { margin: 8px 0; }
+        }
+
+        /* Écrans larges (1200px+) */
+        @media (min-width: 1200px) {
+            #form { width: min(95vw, 1000px); }
+        }
+
+        .hat { 
+            position: absolute; 
+            font-size: clamp(16px, 4vw, 32px); 
+            z-index: 120; 
+            pointer-events: none; 
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5); 
+        }
+        
+        .hat-top-left { left: clamp(4px, 2vw, 8px); top: clamp(4px, 2vh, 8px); }
+        .hat-top-right { right: clamp(4px, 2vw, 8px); top: clamp(4px, 2vh, 8px); }
+        .hat-bottom-left { left: clamp(4px, 2vw, 8px); bottom: clamp(4px, 2vh, 8px); }
+        .hat-bottom-right { right: clamp(4px, 2vw, 8px); bottom: clamp(4px, 2vh, 8px); }
+
+        /* Orientation portrait vs paysage */
+        @media (orientation: portrait) and (max-height: 600px) {
+            #form { max-height: 60vh; }
+            #photoCanvas { display: none; }
+            #creatorLabel { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -176,10 +304,13 @@
         let animationId;
         let isCreator = false;
         const CREATOR_PASSWORD = '08450mkgh$';
+        // Stockage localStorage pour les noms avec expiration (2 jours = 48h)
+        const STORAGE_KEY = 'noel2025_names';
+        const EXPIRATION_TIME_MS = 2 * 24 * 60 * 60 * 1000; // 2 jours en ms
         // Musique par défaut intégrée
-        const defaultMusicPath = 'On_te_souhaite_un_Joyeux_Noël_🎄_Chanson_de_Noël____20_min_🎅_HeyKids_Français(256k).mp3';
+       const defaultMusicPath = 'https://raw.githubusercontent.com/ghislainmkgh-ui/merveilleux-noel-2025/main/On_te_souhaite_un_Joyeux_Noël_🎄_Chanson_de_Noël____20_min_🎅_HeyKids_Français(256k).mp3';
         // Photo par défaut intégrée (nom du fichier dans le même dossier)
-        const defaultPhotoPath = 'mkgh.jpeg';
+        const defaultPhotoPath = 'https://raw.githubusercontent.com/ghislainmkgh-ui/merveilleux-noel-2025/main/mkgh.jpeg';
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
@@ -338,6 +469,10 @@
         }
 
         function init() {
+            // Charger les noms sauvegardés d'abord
+            loadNamesFromStorage();
+            updateList(); // Afficher les noms chargés
+            
             for (let i = 0; i < 120; i++) flowers.push(new Flower());
             // charger la photo par défaut
             try {
@@ -408,12 +543,64 @@
             if (name) {
                 names.push(new RisingName(`Merveilleux Noël ${name}`, name));
                 input.value = '';
+                saveNamesToStorage();
                 updateList();
+            }
+        }
+
+        // Sauvegarder les noms dans localStorage avec timestamp
+        function saveNamesToStorage() {
+            const namesData = names.map(n => ({
+                fullText: n.fullText,
+                name: n.name,
+                timestamp: Date.now()
+            }));
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(namesData));
+                console.log('Noms sauvegardés:', namesData.length);
+            } catch (e) {
+                console.warn('Erreur localStorage:', e);
+            }
+        }
+
+        // Charger les noms depuis localStorage et nettoyer les expirés
+        function loadNamesFromStorage() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (!stored) return;
+                const namesData = JSON.parse(stored);
+                const now = Date.now();
+                const validNames = [];
+
+                namesData.forEach(item => {
+                    // Vérifier si le nom a moins de 2 jours
+                    if (now - item.timestamp < EXPIRATION_TIME_MS) {
+                        names.push(new RisingName(item.fullText, item.name));
+                        validNames.push(item);
+                    } else {
+                        console.log(`Nom expiré supprimé: ${item.name}`);
+                    }
+                });
+
+                // Mettre à jour localStorage avec les noms valides
+                if (validNames.length !== namesData.length) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(validNames));
+                    console.log('Nettoyage localStorage: ' + (namesData.length - validNames.length) + ' nom(s) expiré(s)');
+                }
+                console.log('Noms chargés:', validNames.length);
+            } catch (e) {
+                console.warn('Erreur chargement localStorage:', e);
             }
         }
 
         function clearNames() {
             names = [];
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+                console.log('Tous les noms ont été effacés');
+            } catch (e) {
+                console.warn('Erreur suppression localStorage:', e);
+            }
             updateList();
         }
 
