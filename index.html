@@ -128,7 +128,7 @@
             border-radius: 50%; 
             box-shadow: 0 0 60px rgba(255,215,0,0.9); 
             left: 50%; 
-            top: 45%; 
+            top: 58%; 
             transform: translate(-50%, -50%);
             width: min(35vmin, 90vw);
             height: min(35vmin, 90vw);
@@ -140,7 +140,7 @@
             position: absolute; 
             z-index: 60; 
             left: 50%; 
-            top: 75%; 
+            top: 82%; 
             transform: translate(-50%, -50%);
             background: linear-gradient(45deg, #ffd700, #ff6b6b); 
             -webkit-background-clip: text; 
@@ -303,10 +303,26 @@
         let myPhoto = null;
         let animationId;
         let isCreator = false;
-        const CREATOR_PASSWORD = '08450mkgh$';
+        // Hash SHA-256 du mot de passe créateur (sécurisé)
+        const CREATOR_PASSWORD_HASH = '7b52009b64fd0a2a49e6d8a939753077792b0554e4d5d7797b3a0f97df3a18a9';
         // Stockage localStorage pour les noms avec expiration (2 jours = 48h)
         const STORAGE_KEY = 'noel2025_names';
         const EXPIRATION_TIME_MS = 2 * 24 * 60 * 60 * 1000; // 2 jours en ms
+
+        // Fonction pour hasher le mot de passe entré en SHA-256
+        async function hashPassword(password) {
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(password);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                return hashHex;
+            } catch (e) {
+                console.error('Erreur hash:', e);
+                return null;
+            }
+        }
         // Musique par défaut intégrée
        const defaultMusicPath = 'https://raw.githubusercontent.com/ghislainmkgh-ui/merveilleux-noel-2025/main/On_te_souhaite_un_Joyeux_Noël_🎄_Chanson_de_Noël____20_min_🎅_HeyKids_Français(256k).mp3';
         // Photo par défaut intégrée (nom du fichier dans le même dossier)
@@ -659,17 +675,20 @@
         });
 
         // clic droit (contextmenu) sur le cercle photo pour révéler le login secret
-        photoCanvas.addEventListener('contextmenu', (e) => {
+        photoCanvas.addEventListener('contextmenu', async (e) => {
             e.preventDefault();
             const pw = prompt('Mot de passe créateur :');
-            if (pw === CREATOR_PASSWORD) {
-                isCreator = true;
-                uploadBtn.style.display = 'inline-block';
-                const uploadMusicBtn = document.getElementById('uploadMusicBtn');
-                if (uploadMusicBtn) uploadMusicBtn.style.display = 'inline-block';
-                alert('Connecté en tant que créateur — vous pouvez maintenant ajouter la photo');
-            } else if (pw !== null) {
-                alert('Mot de passe incorrect');
+            if (pw !== null) {
+                const pwHash = await hashPassword(pw);
+                if (pwHash === CREATOR_PASSWORD_HASH) {
+                    isCreator = true;
+                    uploadBtn.style.display = 'inline-block';
+                    const uploadMusicBtn = document.getElementById('uploadMusicBtn');
+                    if (uploadMusicBtn) uploadMusicBtn.style.display = 'inline-block';
+                    alert('Connecté en tant que créateur — vous pouvez maintenant ajouter la photo');
+                } else {
+                    alert('Mot de passe incorrect');
+                }
             }
             return false;
         });
