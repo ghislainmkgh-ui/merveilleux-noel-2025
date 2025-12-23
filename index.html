@@ -510,6 +510,17 @@
                 uploadedAudioEl = new Audio(defaultMusicPath);
                 uploadedAudioEl.loop = true;
                 uploadedAudioEl.volume = 0.6;
+                uploadedAudioEl.crossOrigin = 'anonymous';
+                
+                // Gestionnaire pour redémarrer la musique si elle s'arrête
+                uploadedAudioEl.addEventListener('ended', () => {
+                    if (audioPlaying && uploadedAudioEl) {
+                        console.log('Musique redémarrée (fin atteinte)');
+                        uploadedAudioEl.currentTime = 0;
+                        uploadedAudioEl.play().catch(e => console.log('Erreur redémarrage:', e));
+                    }
+                });
+                
                 uploadedAudioEl.onerror = function() {
                     console.warn('Erreur chargement musique:', defaultMusicPath);
                 };
