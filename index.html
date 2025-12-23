@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merveilleux Noël 2025 🎄✨ Créé par [GHISLAIN MKGH]</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            background: linear-gradient(to bottom, #001122, #000011); 
+            font-family: 'Arial', sans-serif; 
+            color: white; 
+            cursor: none;
+        }
+        canvas { display: block; }
+        #form { 
+            position: absolute; top: 80px; left: 50%; transform: translateX(-50%); z-index: 100; background: rgba(0,0,0,0.6); 
+            padding: 12px 18px; border-radius: 12px; backdrop-filter: blur(8px); width: min(95%, 900px);
+        }
+        #pageTitle { position: fixed; top: 8px; left: 50%; transform: translateX(-50%); z-index: 130; font-size: 1.4rem; text-align: center; -webkit-background-clip: text; color: white; }
+        input { 
+            background: rgba(255,255,255,0.1); border: 2px solid #ff6b6b; color: white; 
+            padding: 10px; border-radius: 10px; margin: 5px; width: min(80vw, 260px);
+        }
+        button { 
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4); border: none; color: white; 
+            padding: 10px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; margin: 5px;
+        }
+        /* Controls bar: grouped and centered to avoid confusion */
+        .controls { display: flex; gap: 8px; justify-content: center; align-items: center; flex-wrap: wrap; }
+        .controls button { position: relative; z-index: 110; }
+        #namesList { margin-top: 10px; max-height: 200px; overflow-y: auto; }
+        .nameItem { 
+            background: rgba(255,255,255,0.1); margin: 5px 0; padding: 5px; border-radius: 5px; 
+            animation: glow 2s infinite alternate;
+        }
+        @keyframes glow { 0% { box-shadow: 0 0 5px #ff6b6b; } 100% { box-shadow: 0 0 20px #4ecdc4; } }
+        h1 { text-align: center; font-size: 2em; margin: 20px 0; background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: rainbow 3s infinite; }
+        @keyframes rainbow { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        #photoCanvas { 
+            position: absolute; 
+            z-index: 9999; /* photo above all UI */
+            border-radius: 50%; 
+            box-shadow: 0 0 60px rgba(255,215,0,0.9); 
+            left: 50%; 
+            top: 45%; 
+            transform: translate(-50%, -50%);
+            width: 30vmin;
+            height: 30vmin;
+            max-width: 420px;
+            max-height: 420px;
+        }
+        #creatorLabel { 
+            position: absolute; z-index: 60; left: 50%; top: 75%; transform: translate(-50%, -50%);
+            background: linear-gradient(45deg, #ffd700, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-size: 24px; font-weight: bold; animation: rainbow 3s infinite; text-shadow: 0 0 20px rgba(255,215,0,0.8);
+        }
+
+        @media (max-width: 480px) {
+            #form { left: 8px; top: 8px; padding: 12px; width: calc(100% - 16px); }
+            h1 { font-size: 1.2em; }
+            button { padding: 8px 12px; font-size: 14px; }
+            #photoCanvas { width: 40vmin; height: 40vmin; }
+        }
+
+        .hat { position: absolute; font-size: 28px; z-index: 120; pointer-events: none; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .hat-top-left { left: 6px; top: 6px; }
+        .hat-top-right { right: 6px; top: 6px; }
+        .hat-bottom-left { left: 6px; bottom: 6px; }
+        .hat-bottom-right { right: 6px; bottom: 6px; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <canvas id="photoCanvas" width="200" height="200"></canvas>
+    <div id="creatorLabel">✨ GHISLAIN MKGH vous souhaite joyeux noël ✨</div>
+    <div id="pageTitle">🎄 Ajoutez les noms des amis pour Noël 2025 ✨</div>
+    <div id="form">
+        <input type="text" id="nameInput" placeholder="Entrez un nom..." />
+        <br>
+        <div class="controls">
+            <button id="addNameBtn">➕ Ajouter</button>
+            <button id="clearBtn">🧹 Effacer</button>
+            <button id="audioToggle">🔔 Son: Activer</button>
+            <button id="uploadBtn" style="display:none;">📷 Ajouter ma photo</button>
+            <button id="uploadMusicBtn" style="display:none;">🎵 Ajouter musique</button>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" style="display:none;" onchange="uploadPhoto(event)">
+        <input type="file" id="musicInput" accept="audio/*" style="display:none;" onchange="uploadMusic(event)">
+        <div id="namesList"></div>
+    </div>
+
+    <!-- Petits chapeaux de Noël aux quatre coins -->
+    <div class="hat hat-top-left">🎅</div>
+    <div class="hat hat-top-right">🎅</div>
+    <div class="hat hat-bottom-left">🎅</div>
+    <div class="hat hat-bottom-right">🎅</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const photoCanvas = document.getElementById('photoCanvas');
+        const photoCtx = photoCanvas.getContext('2d');
+        
+        // WebAudio synthé festif (démarré par défaut)
+        let audioCtx = null;
+        let masterGain = null;
+        let melodyInterval = null;
+        let audioPlaying = false;
+
+        function initAudio() {
+            if (audioCtx) return;
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioCtx.createGain();
+                masterGain.gain.value = 0.35;
+                masterGain.connect(audioCtx.destination);
+            } catch (e) {
+                console.log('WebAudio non disponible', e);
+            }
+        }
+
+        function playNote(freq, when, duration = 0.25) {
+            if (!audioCtx) return;
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'sine';
+            o.frequency.value = freq;
+            g.gain.setValueAtTime(0.0001, when);
+            g.gain.exponentialRampToValueAtTime(0.9, when + 0.01);
+            g.gain.exponentialRampToValueAtTime(0.0001, when + duration);
+            o.connect(g);
+            g.connect(masterGain);
+            o.start(when);
+            o.stop(when + duration + 0.02);
+        }
+
+        function playMelodyOnce() {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            // Simple jingle: C4, E4, G4, C5 arpeggio then a little flourish
+            const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
+            for (let i = 0; i < notes.length; i++) {
+                playNote(notes[i], now + i * 0.32, 0.28);
+            }
+        }
+
+        function startMusic() {
+            initAudio();
+            if (!audioCtx) return false;
+            // Resume context for browsers requiring user interaction
+            audioCtx.resume().then(() => {
+                if (melodyInterval) clearInterval(melodyInterval);
+                playMelodyOnce();
+                melodyInterval = setInterval(playMelodyOnce, 2200);
+                audioPlaying = true;
+                const btn = document.getElementById('audioToggle');
+                if (btn) btn.textContent = '🔔 Son: Désactiver';
+            }).catch(() => {
+                audioPlaying = false;
+            });
+            return true;
+        }
+
+        function stopMusic() {
+            if (melodyInterval) { clearInterval(melodyInterval); melodyInterval = null; }
+            audioPlaying = false;
+            const btn = document.getElementById('audioToggle');
+            if (btn) btn.textContent = '🔔 Son: Activer';
+        }
+
+        let flowers = [];
+        let names = [];
+        let myPhoto = null;
+        let animationId;
+        let isCreator = false;
+        const CREATOR_PASSWORD = '08450mkgh$';
+        // Musique par défaut intégrée
+        const defaultMusicPath = 'On_te_souhaite_un_Joyeux_Noël_🎄_Chanson_de_Noël____20_min_🎅_HeyKids_Français(256k).mp3';
+        // Photo par défaut intégrée (nom du fichier dans le même dossier)
+        const defaultPhotoPath = 'mkgh.jpeg';
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            resizePhoto();
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Fleurs tombantes
+        class Flower {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = -50;
+                this.size = Math.random() * 15 + 5;
+                this.speedY = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 2 - 1;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = Math.random() * 0.05;
+                this.opacity = Math.random() * 0.5 + 0.3;
+                this.swing = Math.random() * Math.PI * 2;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX + Math.sin(this.swing) * 0.5;
+                this.rotation += this.rotSpeed;
+                this.swing += 0.1;
+                this.opacity -= 0.001;
+                if (this.y > canvas.height || this.opacity <= 0) {
+                    this.y = -50;
+                    this.opacity = Math.random() * 0.5 + 0.3;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                gradient.addColorStop(0, `hsl(${Math.sin(Date.now() * 0.001 + this.x) * 30 + 340}, 80%, 60%)`);
+                gradient.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // Noms montant du bas (bouclent indéfiniment)
+        class RisingName {
+            constructor(fullText, name) {
+                this.fullText = fullText;
+                this.name = name;
+                this.reset();
+                this.speedY = -(Math.random() * 1.2 + 0.6);
+            }
+            reset() {
+                this.y = canvas.height + 50 + Math.random() * 200;
+                this.x = Math.random() * canvas.width;
+            }
+            update() {
+                this.y += this.speedY;
+                if (this.y < -120) {
+                    this.reset();
+                }
+                return true;
+            }
+            draw() {
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowColor = '#ff6b6b';
+                ctx.shadowBlur = 20;
+                
+                ctx.font = 'bold 28px Arial';
+                const gradient = ctx.createLinearGradient(0, 0, 200, 0);
+                gradient.addColorStop(0, '#ff6b6b');
+                gradient.addColorStop(0.5, '#4ecdc4');
+                gradient.addColorStop(1, '#45b7d1');
+                ctx.fillStyle = gradient;
+                ctx.fillText('Merveilleux Noël', this.x, this.y - 20);
+                
+                ctx.font = 'bold 24px Arial';
+                ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                ctx.shadowBlur = 10;
+                ctx.fillText(this.name, this.x, this.y + 10);
+                ctx.restore();
+            }
+        }
+
+        // Gestion photo (autorisé uniquement pour le créateur)
+        function uploadPhoto(event) {
+            if (!isCreator) return alert('Seul le créateur peut ajouter une photo');
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    myPhoto = new Image();
+                    myPhoto.onload = function() {
+                        resizePhoto();
+                    };
+                    myPhoto.src = e.target.result;
+                    document.getElementById('photoInput').value = ''; // Reset
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function resizePhoto() {
+            if (!myPhoto) return;
+            const size = Math.min(canvas.width * 0.35, canvas.height * 0.35, 420);
+            photoCanvas.width = size;
+            photoCanvas.height = size;
+            photoCanvas.style.width = size + 'px';
+            photoCanvas.style.height = size + 'px';
+        }
+
+        function drawPhoto() {
+            if (!myPhoto) return;
+            
+            photoCtx.clearRect(0, 0, photoCanvas.width, photoCanvas.height);
+            
+            // Photo avec bordure circulaire
+            photoCtx.save();
+            photoCtx.beginPath();
+            photoCtx.arc(photoCanvas.width/2, photoCanvas.height/2, photoCanvas.width/2 - 5, 0, Math.PI * 2);
+            photoCtx.clip();
+            photoCtx.drawImage(myPhoto, 0, 0, photoCanvas.width, photoCanvas.height);
+            photoCtx.restore();
+            
+            // Bordure arc-en-ciel rotative
+            const time = Date.now() * 0.005;
+            const gradient = photoCtx.createRadialGradient(photoCanvas.width/2, photoCanvas.height/2, 0, photoCanvas.width/2, photoCanvas.height/2, photoCanvas.width/2);
+            gradient.addColorStop(0, `hsl(${(time * 30) % 360}, 100%, 70%)`);
+            gradient.addColorStop(0.7, 'rgba(255,215,0,0.9)');
+            gradient.addColorStop(1, 'rgba(255,215,0,0)');
+            
+            photoCtx.beginPath();
+            photoCtx.arc(photoCanvas.width/2, photoCanvas.height/2, photoCanvas.width/2 - 5, 0, Math.PI * 2);
+            photoCtx.lineWidth = 8;
+            photoCtx.strokeStyle = gradient;
+            photoCtx.lineCap = 'round';
+            photoCtx.stroke();
+            
+            // Étoiles scintillantes autour
+            for (let i = 0; i < 8; i++) {
+                const angle = (time + i * Math.PI / 4) % (Math.PI * 2);
+                const starX = photoCanvas.width/2 + Math.cos(angle) * (photoCanvas.width/2 + 20);
+                const starY = photoCanvas.height/2 + Math.sin(angle) * (photoCanvas.height/2 + 20);
+                photoCtx.fillStyle = `hsl(${(time * 60 + i * 45) % 360}, 100%, 80%)`;
+                photoCtx.beginPath();
+                photoCtx.arc(starX, starY, 4, 0, Math.PI * 2);
+                photoCtx.fill();
+            }
+        }
+
+        function init() {
+            for (let i = 0; i < 120; i++) flowers.push(new Flower());
+            // charger la photo par défaut
+            try {
+                myPhoto = new Image();
+                myPhoto.onload = function() {
+                    resizePhoto();
+                    console.log('Photo chargée:', defaultPhotoPath);
+                };
+                myPhoto.onerror = function() {
+                    console.warn('Erreur chargement photo:', defaultPhotoPath);
+                    myPhoto = null;
+                };
+                myPhoto.src = defaultPhotoPath;
+            } catch (e) {
+                console.error('Exception photo:', e);
+            }
+            // charger la musique par défaut (intégrée)
+            try {
+                uploadedAudioEl = new Audio(defaultMusicPath);
+                uploadedAudioEl.loop = true;
+                uploadedAudioEl.volume = 0.6;
+                uploadedAudioEl.onerror = function() {
+                    console.warn('Erreur chargement musique:', defaultMusicPath);
+                };
+                // tenter de lancer la musique dès l'ouverture
+                uploadedAudioEl.play().then(() => {
+                    audioPlaying = true;
+                    const btn = document.getElementById('audioToggle');
+                    if (btn) btn.textContent = '🔔 Son: Désactiver';
+                }).catch(() => {
+                    // fallback au synthé si la politique du navigateur l'exige
+                    startMusic();
+                });
+            } catch (e) {
+                console.error('Exception musique:', e);
+            }
+            // vibration courte au démarrage (mobile)
+            try { if (navigator.vibrate) navigator.vibrate([200,100,200]); } catch (e) {}
+            animate();
+            resetInactivityTimer();
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(0,0,20,0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            flowers.forEach(flower => {
+                flower.update();
+                flower.draw();
+            });
+            
+            if (Math.random() < 0.4) flowers.push(new Flower());
+            if (flowers.length > 180) flowers.shift();
+            
+            names.forEach(name => {
+                name.update();
+                name.draw();
+            });
+            
+            drawPhoto(); // TOUS voient la photo signature
+            
+            animationId = requestAnimationFrame(animate);
+        }
+
+        function addName() {
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
+            if (name) {
+                names.push(new RisingName(`Merveilleux Noël ${name}`, name));
+                input.value = '';
+                updateList();
+            }
+        }
+
+        function clearNames() {
+            names = [];
+            updateList();
+        }
+
+        function updateList() {
+            const list = document.getElementById('namesList');
+            list.innerHTML = names.map(n => `<div class="nameItem">✨ ${n.fullText}</div>`).join('');
+        }
+
+        // Contrôles audio, authentification créateur (clic droit sur la photo) et gestion d'inactivité
+        const audioToggleBtn = document.getElementById('audioToggle');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const formEl = document.getElementById('form');
+
+        // audio toggle -> utilise startMusic/stopMusic
+        // gestion musique uploadée (priorité) ou synthé
+        let uploadedAudioEl = null;
+        let uploadedAudioURL = null;
+
+        function uploadMusic(event) {
+            if (!isCreator) return alert('Seul le créateur peut ajouter une musique');
+            const file = event.target.files[0];
+            if (!file) return;
+            if (uploadedAudioEl) {
+                try { uploadedAudioEl.pause(); } catch (e) {}
+                if (uploadedAudioURL) URL.revokeObjectURL(uploadedAudioURL);
+            }
+            uploadedAudioURL = URL.createObjectURL(file);
+            uploadedAudioEl = new Audio(uploadedAudioURL);
+            uploadedAudioEl.loop = true;
+            uploadedAudioEl.volume = 0.6;
+            alert('Musique chargée. Elle sera lue par défaut quand vous activez le son.');
+            // show music upload button state
+        }
+
+        audioToggleBtn.addEventListener('click', () => {
+            if (!audioPlaying) {
+                // prefer uploaded audio
+                if (uploadedAudioEl) {
+                    uploadedAudioEl.play().then(() => {
+                        audioPlaying = true;
+                        audioToggleBtn.textContent = '🔔 Son: Désactiver';
+                    }).catch(() => {
+                        // fallback to synth
+                        startMusic();
+                    });
+                } else {
+                    startMusic();
+                }
+            } else {
+                // stop whatever is playing
+                if (uploadedAudioEl) {
+                    uploadedAudioEl.pause();
+                }
+                stopMusic();
+            }
+        });
+
+        // clic droit (contextmenu) sur le cercle photo pour révéler le login secret
+        photoCanvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            const pw = prompt('Mot de passe créateur :');
+            if (pw === CREATOR_PASSWORD) {
+                isCreator = true;
+                uploadBtn.style.display = 'inline-block';
+                const uploadMusicBtn = document.getElementById('uploadMusicBtn');
+                if (uploadMusicBtn) uploadMusicBtn.style.display = 'inline-block';
+                alert('Connecté en tant que créateur — vous pouvez maintenant ajouter la photo');
+            } else if (pw !== null) {
+                alert('Mot de passe incorrect');
+            }
+            return false;
+        });
+
+        uploadBtn.addEventListener('click', () => {
+            if (isCreator) document.getElementById('photoInput').click();
+            else alert('Seul le créateur peut ajouter une photo');
+        });
+
+        // liaisons boutons Add/Clear
+        const addNameBtn = document.getElementById('addNameBtn');
+        const clearBtnEl = document.getElementById('clearBtn');
+        if (addNameBtn) addNameBtn.addEventListener('click', addName);
+        if (clearBtnEl) clearBtnEl.addEventListener('click', clearNames);
+
+        // music upload button
+        const musicInput = document.getElementById('musicInput');
+        const uploadMusicBtn = document.getElementById('uploadMusicBtn');
+        if (uploadMusicBtn) {
+            uploadMusicBtn.addEventListener('click', () => {
+                if (isCreator) musicInput.click();
+                else alert('Seul le créateur peut ajouter une musique');
+            });
+        }
+
+        // Inactivité: masquer les contrôles après 2 minutes sans interaction
+        let inactivityTimer = null;
+        const INACTIVITY_MS = 120000; // 2 minutes
+
+        function hideControls() {
+            const els = formEl.querySelectorAll('button, input#nameInput');
+            els.forEach(el => { el.style.display = 'none'; });
+        }
+
+        function showControls() {
+            const els = formEl.querySelectorAll('button, input#nameInput');
+            els.forEach(el => { el.style.display = ''; });
+            // keep uploadBtn visibility according to creator state
+            if (!isCreator) uploadBtn.style.display = 'none';
+        }
+
+        function resetInactivityTimer() {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            // ensure controls visible while active
+            showControls();
+            inactivityTimer = setTimeout(() => {
+                hideControls();
+            }, INACTIVITY_MS);
+        }
+
+        // reset timer on interactions
+        ['click','mousemove','touchstart','keydown','input'].forEach(evt => {
+            document.addEventListener(evt, resetInactivityTimer, {passive:true});
+        });
+
+        // si la musique n'a pas démarré à cause de la politique du navigateur, retenter au premier click
+        document.addEventListener('click', () => {
+            if (!audioPlaying) {
+                if (uploadedAudioEl) {
+                    uploadedAudioEl.play().then(() => {
+                        audioPlaying = true;
+                        const btn = document.getElementById('audioToggle');
+                        if (btn) btn.textContent = '🔔 Son: Désactiver';
+                    }).catch(() => { startMusic(); });
+                } else {
+                    startMusic();
+                }
+            }
+        }, { once: true });
+
+        document.addEventListener('keydown', e => { 
+            if (e.key === 'Enter') addName(); 
+        });
+
+        init();
+    </script>
+</body>
+</html>
