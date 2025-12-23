@@ -209,6 +209,7 @@
         <br>
         <div class="controls">
             <button id="addNameBtn">➕ Ajouter</button>
+            <button id="shareBtn">📤 Partager</button>
             <button id="clearBtn">🧹 Effacer</button>
             <button id="audioToggle">🔔 Son: Activer</button>
             <button id="uploadBtn" style="display:none;">📷 Ajouter ma photo</button>
@@ -321,6 +322,40 @@
             } catch (e) {
                 console.error('Erreur hash:', e);
                 return null;
+            }
+        }
+
+        // Encoder les noms dans l'URL (base64)
+        function encodeNamesForUrl() {
+            const namesData = names.map(n => ({
+                fullText: n.fullText,
+                name: n.name
+            }));
+            const json = JSON.stringify(namesData);
+            const encoded = btoa(encodeURIComponent(json));
+            const baseUrl = window.location.origin + window.location.pathname;
+            const shareUrl = baseUrl + '?noms=' + encoded;
+            return shareUrl;
+        }
+
+        // Décoder les noms depuis l'URL et les charger
+        function decodeNamesFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const encoded = params.get('noms');
+            if (!encoded) return false;
+
+            try {
+                const json = decodeURIComponent(atob(encoded));
+                const namesData = JSON.parse(json);
+                
+                namesData.forEach(item => {
+                    names.push(new RisingName(item.fullText, item.name));
+                });
+                console.log('Noms chargés depuis URL:', namesData.length);
+                return true;
+            } catch (e) {
+                console.warn('Erreur décodage URL:', e);
+                return false;
             }
         }
         // Musique par défaut intégrée
@@ -485,8 +520,14 @@
         }
 
         function init() {
-            // Charger les noms sauvegardés d'abord
-            loadNamesFromStorage();
+            // Charger d'abord depuis l'URL (si lien partagé)
+            const loadedFromUrl = decodeNamesFromUrl();
+            
+            // Sinon charger depuis localStorage
+            if (!loadedFromUrl) {
+                loadNamesFromStorage();
+            }
+            
             updateList(); // Afficher les noms chargés
             
             for (let i = 0; i < 120; i++) flowers.push(new Flower());
@@ -712,8 +753,26 @@
         // liaisons boutons Add/Clear
         const addNameBtn = document.getElementById('addNameBtn');
         const clearBtnEl = document.getElementById('clearBtn');
+        const shareBtnEl = document.getElementById('shareBtn');
         if (addNameBtn) addNameBtn.addEventListener('click', addName);
         if (clearBtnEl) clearBtnEl.addEventListener('click', clearNames);
+        if (shareBtnEl) {
+            shareBtnEl.addEventListener('click', () => {
+                if (names.length === 0) {
+                    alert('Ajoutez d\'abord des noms avant de partager !');
+                    return;
+                }
+                const shareUrl = encodeNamesForUrl();
+                
+                // Copier dans le presse-papiers
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('🎉 Lien copié !\n\nVos amis verront tous les noms que vous avez ajoutés quand ils ouvriront ce lien.');
+                }).catch(() => {
+                    // Fallback: afficher le lien pour copie manuelle
+                    prompt('Copiez ce lien et partagez-le avec vos amis:\n', shareUrl);
+                });
+            });
+        }
 
         // music upload button
         const musicInput = document.getElementById('musicInput');
